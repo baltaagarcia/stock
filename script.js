@@ -233,8 +233,8 @@ function exportarCSV() {
         return;
     }
     let csvContent = "data:text/csv;charset=utf-8,"
-        + "ID,Nombre,Cantidad,Precio\n"
-        + productos.map(p => `${p.id},${p.nombre},${p.cantidad},${p.precio}`).join("\n");
+        + "ID,Nombre,Cantidad,Precio,Categoria\n"
+        + productos.map(p => `${p.id},${p.nombre},${p.cantidad},${p.precio},${p.categoria}`).join("\n");
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -269,11 +269,12 @@ function importarCSV(event) {
         // Omitir la primera línea (encabezados)
         for (let i = 1; i < lineas.length; i++) {
             const datos = lineas[i].split(',');
-            if (datos.length === 4) {
+            if (datos.length === 5) {
                 const id = parseInt(datos[0]);
                 const nombre = datos[1].trim();
                 const cantidad = parseInt(datos[2]);
                 const precio = parseFloat(datos[3]);
+                const categoria  = parseInt(datos[4]);
 
                 // Verificamos que los datos sean válidos antes de agregar
                 if (!isNaN(id) && !isNaN(cantidad) && !isNaN(precio) && cantidad >= 0 && precio >= 0) {
