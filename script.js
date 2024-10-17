@@ -1,24 +1,52 @@
+const categoriasMap = {
+    0: 'Sin Categoria',
+    1: 'Electrónica',
+    2: 'Ropa',
+    3: 'Alimentos'
+    
+}
+
+
+
 // Clase Producto
 class Producto {
-    constructor(id, nombre, cantidad, precio) {
+    constructor(id, nombre, cantidad, precio, categoria) {
         this.id = id;
         this.nombre = nombre;
         this.cantidad = cantidad;
         this.precio = precio;
+        this.categoria = categoria;
     }
 }
+
+//Clase Categoria
+class Categoria {
+    constructor(id, nombre) {
+        this.id = id;
+        this.nombre = nombre;
+    }
+}
+
 
 // Clase Inventario
 class Inventario {
     constructor() {
         this.productos = [];
-        this.idActual = 1; // Para asignar un ID único a cada producto
+        this.categorias = [];
+        this.idActualProdcuto = 1; // Para asignar un ID único a cada producto
+        this.idActualCategoria = 0; // Para Asignar un ID unico a cada categoria    
     }
 
-    agregarProducto(nombre, cantidad, precio) {
-        const producto = new Producto(this.idActual++, nombre, cantidad, parseFloat(precio).toFixed(2));
+    agregarProducto(nombre, cantidad, precio,categoria) {
+        const producto = new Producto(this.idActualProdcuto++, nombre, cantidad, parseFloat(precio).toFixed(2),categoria);
         this.productos.push(producto);
         this.mostrarProductos();
+    }
+
+    agregarCategoria(nombre) {
+        const categoria = new Categoria(this.idActualCategoria++, nombre)
+        this.categorias.push(categoria);
+        this.mostrarCategorias();
     }
 
     eliminarProducto(id) {
@@ -31,7 +59,7 @@ class Inventario {
     mostrarProductos() {
         const tabla = document.getElementById('tabla-productos');
         tabla.innerHTML = ''; // Limpiar la tabla antes de renderizar
-    
+
         this.productos.forEach((producto) => {
             const fila = document.createElement('tr');
             // Resaltar si la cantidad está por debajo de 5
@@ -43,6 +71,7 @@ class Inventario {
                 <td>${producto.nombre}</td>
                 <td>${producto.cantidad}</td>
                 <td>$${producto.precio}</td>
+                <td>${producto.categoria ? categoriasMap[producto.categoria] : 'Sin categoria'}</td>
                 <td>
                     <button onclick="editarProducto(${producto.id})">Editar</button>
                     <button onclick="eliminarProducto(${producto.id})">Eliminar</button>
@@ -51,18 +80,40 @@ class Inventario {
             tabla.appendChild(fila);
         });
     }
-    
+
+
+    mostrarCategorias() {
+        const selectCategorias = document.getElementById('categoria');
+        selectCategorias.innerHTML = ''; // Limpiar el select antes de agregar opciones
+
+        this.categorias.forEach((categoria) => {
+            const option = document.createElement('option');
+            option.value = categoria.id;
+            option.textContent = categoria.nombre;
+            selectCategorias.appendChild(option);
+        });
+    }
 }
+
+
+
 
 // Inicializar el inventario
 const inventario = new Inventario();
 
+//Agregar algunas categorias por defecto
+inventario.agregarCategoria('-')
+inventario.agregarCategoria('Electronica')
+inventario.agregarCategoria('Alimentos')
+inventario.agregarCategoria('Ropa')
+
 // Agregar evento al formulario para añadir productos
-document.getElementById('producto-form').addEventListener('submit', function(e) {
+document.getElementById('producto-form').addEventListener('submit', function (e) {
     e.preventDefault();
     const nombre = document.getElementById('nombre').value;
     const cantidad = document.getElementById('cantidad').value;
     const precio = document.getElementById('precio').value;
+    const categoriaId = document.getElementById('categoria').value;
     const mensajeError = document.getElementById('mensaje-error');
 
     // Validación de cantidad y precio
@@ -79,7 +130,7 @@ document.getElementById('producto-form').addEventListener('submit', function(e) 
     }
 
     // Si la validación pasa, agregar el producto
-    inventario.agregarProducto(nombre, cantidad, precio);
+    inventario.agregarProducto(nombre, cantidad, precio, categoriaId);
 
     // Limpiar campos del formulario
     this.reset();
@@ -104,7 +155,7 @@ function editarProducto(id) {
         boton.textContent = 'Guardar Cambios';
 
         // Cambiar el evento de envío para que guarde los cambios en lugar de agregar un nuevo producto
-        document.getElementById('producto-form').onsubmit = function(e) {
+        document.getElementById('producto-form').onsubmit = function (e) {
             e.preventDefault();
             const nuevoNombre = document.getElementById('nombre').value;
             const nuevaCantidad = document.getElementById('cantidad').value;
@@ -128,7 +179,7 @@ function editarProducto(id) {
             // Restaurar el formulario a su estado original
             this.reset();
             boton.textContent = 'Agregar Producto';
-            this.onsubmit = function(e) {
+            this.onsubmit = function (e) {
                 e.preventDefault();
                 const nombre = document.getElementById('nombre').value;
                 const cantidad = document.getElementById('cantidad').value;
@@ -181,8 +232,8 @@ function exportarCSV() {
         alert('No hay productos para exportar.');
         return;
     }
-    let csvContent = "data:text/csv;charset=utf-8," 
-        + "ID,Nombre,Cantidad,Precio\n" 
+    let csvContent = "data:text/csv;charset=utf-8,"
+        + "ID,Nombre,Cantidad,Precio\n"
         + productos.map(p => `${p.id},${p.nombre},${p.cantidad},${p.precio}`).join("\n");
 
     const encodedUri = encodeURI(csvContent);
@@ -208,10 +259,10 @@ function importarCSV(event) {
         alert('No se ha seleccionado ningún archivo.');
         return;
     }
-    
+
     const lector = new FileReader();
-    
-    lector.onload = function(e) {
+
+    lector.onload = function (e) {
         const contenido = e.target.result;
         const lineas = contenido.split('\n');
 
@@ -233,6 +284,6 @@ function importarCSV(event) {
             }
         }
     };
-    
+
     lector.readAsText(archivo);
 }
