@@ -1,3 +1,5 @@
+
+
 const categoriasMap = {
     0: 'Sin Categoria',
     1: 'Electrónica',
