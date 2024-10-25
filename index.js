@@ -21,6 +21,7 @@ const conexionDB = await mysql.createConnection({
 // Verificar la conexión
 console.log('Conectado a la base de datos MySQL');
 
+// Mostrar todos los productos (GET)
 app.get('/', async (req, res) => {
     try {
         const [resultados] = await conexionDB.query('SELECT * FROM productos');

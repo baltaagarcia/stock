@@ -141,7 +141,7 @@ document.getElementById('producto-form').addEventListener('submit', function (e)
 // Función para eliminar un producto (se llama desde el botón)
 function eliminarProducto(id) {
     inventario.eliminarProducto(id);
-}
+}       
 
 // Función para editar un producto (se llama desde el botón)
 function editarProducto(id) {
@@ -206,9 +206,9 @@ function editarProducto(id) {
         };
     }
 }
-// Función para filtrar productos
 function filtrarProductos() {
     const query = document.getElementById('buscar').value.toLowerCase();
+    console.log('Buscando:', query);
     const tabla = document.getElementById('tabla-productos');
     const filas = tabla.getElementsByTagName('tr');
 
@@ -226,6 +226,7 @@ function filtrarProductos() {
         filas[i].style.display = encontrado ? '' : 'none'; // Mostrar u ocultar la fila
     }
 }
+
 
 // Función para exportar a CSV
 function exportarCSV() {

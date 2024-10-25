@@ -20,11 +20,12 @@
         </select>
         <button type="submit">Agregar Producto</button>
     </form>
-    <!-- Contenedor para los mensajes de error -->
     <div id="mensaje-error" style="color: red; margin-top: 10px; display: none;"></div>
 
-    <!-- Campo para importar CSV -->
     <input type="file" id="importar" accept=".csv" onchange="importarCSV(event)">
+
+    <!-- Campo de búsqueda -->
+    <input type="text" id="buscar" placeholder="Buscar productos..." oninput="filtrarProductos()">
 
     <table>
         <thead>
@@ -36,12 +37,11 @@
                 <th>Categoria</th>
             </tr>
         </thead>
-        <!-- Campo de búsqueda -->
-        <input type="text" id="buscar" placeholder="Buscar productos..." oninput="filtrarProductos()">
         <tbody id="tabla-productos">
             <!-- Productos se agregarán aquí -->
         </tbody>
     </table>
+
     <script src="script.js"></script>
 </body>
 
