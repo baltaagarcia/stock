@@ -1,6 +1,8 @@
-const express = require('express');
-const mysql = require('mysql2');
-require('dotenv').config();
+import express from 'express';
+import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -9,7 +11,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 
 // Crear la conexión a la base de datos
-const db = mysql.createConnection({
+const conexionDB = await mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
@@ -17,80 +19,62 @@ const db = mysql.createConnection({
 });
 
 // Verificar la conexión
-db.connect((err) => {
-    if (err) {
-        console.error('Error conectando a la base de datos:', err);
-        return;
+console.log('Conectado a la base de datos MySQL');
+
+app.get('/', async (req, res) => {
+    try {
+        const [resultados] = await conexionDB.query('SELECT * FROM productos');
+        res.status(200).json(resultados); // Enviar los resultados como JSON
+    } catch (error) {
+        console.error('Error en la consulta:', error);
+        res.status(500).send('Error en la consulta: ' + error.message);
     }
-    console.log('Conectado a la base de datos MySQL');
 });
-
-// Ruta de prueba
-app.get('/', (req, res) => {
-    res.send('API funcionando');
-});
-
 
 // Crear un producto (POST)
-app.post('/productos', (req, res) => {
+app.post('/productos', async (req, res) => {
     const { nombre, precio, cantidad, categoria } = req.body;
     const sql = 'INSERT INTO productos (nombre, precio, cantidad, categoria) VALUES (?, ?, ?, ?)';
 
-   /* db.query(sql, [nombre, precio, cantidad, categoria], (err, res) => {
-        if (err) {
-            return res.status(500).send('Error al crear el producto');
-        }
-        res.status(201).send('Producto creado con éxito');
-    });*/
-    const  respuesta= db.query(sql, [nombre, precio, cantidad, categoria])
-    res.status(201).send('Producto creado con éxito'+respuesta);
+    try {
+        const [respuesta] = await conexionDB.query(sql, [nombre, precio, cantidad, categoria]);
+        res.status(201).send('Producto creado con éxito, ID: ' + respuesta.insertId);
+    } catch (error) {
+        console.error('Error al crear el producto:', error);
+        res.status(500).send('Error al crear el producto');
+    }
 });
 
-// Obtener todos los productos (GET)
-const sql = 'SELECT * FROM productos';
-
-/* db.query(sql, (err, res) => {
-   if (err) {
-     return res.status(500).send('Error al obtener los productos');
-   }
-   res.json(results);
- });*/
-
-
 // Actualizar un producto (PUT)
-app.put('/productos/:id', (req, res) => {
+app.put('/productos/:id', async (req, res) => {
     const { id } = req.params;
     const { nombre, precio, cantidad, categoria } = req.body;
     const sql = 'UPDATE productos SET nombre = ?, precio = ?, cantidad = ?, categoria = ? WHERE id = ?';
 
-    db.query(sql, [nombre, precio, cantidad, categoria, id], (err, res) => {
-        if (err) {
-            return res.status(500).send('Error al actualizar el producto');
-        }
+    try {
+        await conexionDB.query(sql, [nombre, precio, cantidad, categoria, id]);
         res.send('Producto actualizado con éxito');
-    });
+    } catch (error) {
+        console.error('Error al actualizar el producto:', error);
+        res.status(500).send('Error al actualizar el producto');
+    }
 });
 
 // Eliminar un producto (DELETE)
-app.delete('/productos/:id', (req, res) => {
+app.delete('/productos/:id', async (req, res) => {
     const { id } = req.params;
     const sql = 'DELETE FROM productos WHERE id = ?';
 
-    db.query(sql, [id], (err, res) => {
-        if (err) {
-            return res.status(500).send('Error al eliminar el producto');
-        }
+    try {
+        await conexionDB.query(sql, [id]);
         res.send('Producto eliminado con éxito');
-    });
+    } catch (error) {
+        console.error('Error al eliminar el producto:', error);
+        res.status(500).send('Error al eliminar el producto');
+    }
 });
+
 // Iniciar el servidor
 app.listen(port, () => {
     console.log(`Servidor corriendo en http://localhost:${port}`);
 });
-
-
-
-
-
-
-
