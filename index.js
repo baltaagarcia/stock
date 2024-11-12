@@ -1,10 +1,8 @@
 import express from 'express';
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
-import cors from 'cors';
-
+import cors from 'cors'
 dotenv.config();
-
 const app = express();
 
 app.use(cors()); // Permite todas las solicitudes CORS
@@ -34,21 +32,33 @@ app.get('/', async (req, res) => {
         console.error('Error en la consulta:', error);
         res.status(500).send('Error en la consulta: ' + error.message);
     }
-});
+}); 
 
-// Crear un producto (POST)
 app.post('/productos', async (req, res) => {
-    const { nombre, precio, cantidad, categoria } = req.body;
-    const sql = 'INSERT INTO productos (nombre, precio, cantidad, categoria) VALUES (?, ?, ?, ?)';
+    console.log("Cuerpo de la solicitud:", req.body);  // Verificar los datos que llegan
 
+    const { nombre, precio, cantidad, categoria } = req.body;
+
+    if (!nombre || !precio || !cantidad || !categoria) {
+        console.log("Faltan campos en el producto", req.body);
+        return res.status(400).json({ error: 'Faltan campos en el producto' });
+    }
+
+    const sql = 'INSERT INTO productos (nombre, precio, cantidad, categoria) VALUES (?, ?, ?, ?)';
+    
     try {
+        console.log("Ejecutando consulta SQL:", sql, [nombre, precio, cantidad, categoria]);  // Verificar la consulta
+
         const [respuesta] = await conexionDB.query(sql, [nombre, precio, cantidad, categoria]);
-        res.status(201).send('Producto creado con éxito, ID: ' + respuesta.insertId);
+        console.log("Respuesta de la base de datos:", respuesta);  // Verificar la respuesta de la base de datos
+
+        res.status(201).json({ msj: 'Producto creado con éxito, ID: ' + respuesta.insertId, id: respuesta.insertId });
     } catch (error) {
         console.error('Error al crear el producto:', error);
         res.status(500).send('Error al crear el producto');
     }
 });
+
 
 // Actualizar un producto (PUT)
 app.put('/productos/:id', async (req, res) => {
